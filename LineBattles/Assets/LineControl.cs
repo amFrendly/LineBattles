@@ -1,94 +1,78 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using System;
-using System.Runtime.CompilerServices;
-using Unity.VisualScripting;
-using System.Drawing;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
 
 public class LineControl : MonoBehaviour
 {
-    [SerializeField] GameObject soldier;
-    [SerializeField] float spacing;
-    [SerializeField] float rotation;
+    [SerializeField] 
+    GameObject soldier;
 
-    public int zAmount;
-    public int xAmount;
+    [SerializeField] 
+    Transform soldierHolder;
 
-    public void DeleteLine()
+    [SerializeField] 
+    int rows;
+
+    [SerializeField]
+    int columns;
+
+    [SerializeField]
+    float spacing;
+
+    public Vector3 GetLine()
     {
-        for (int i = transform.childCount - 1; i >= 0; i--)
-        {
-            DestroyImmediate(transform.GetChild(i).gameObject);
-        }
+        float rotation = transform.rotation.eulerAngles.y;
+        float x = Mathf.Cos(-rotation / 180 * Mathf.PI);
+        float z = Mathf.Sin(-rotation / 180 * Mathf.PI);
+
+        return new Vector3(x, 0, z) * spacing;
+    }
+    public Vector3 GetLineNormal()
+    {
+        float rotation = transform.rotation.eulerAngles.y - 90;
+        float x = Mathf.Cos(-rotation / 180 * Mathf.PI);
+        float z = Mathf.Sin(-rotation / 180 * Mathf.PI);
+
+        return new Vector3(x, 0, z) * spacing;
     }
     public void CreateLine()
     {
-        Vector3 offset = TopLeft();
-        Vector3 soldierPos = offset;
-        for (int x = 0; x < zAmount; x++)
+        Vector3 line = GetLine();
+        Vector3 lineNormal = GetLineNormal();
+        Vector3 offset = (-line * (rows - 1) / 2f) + (-lineNormal * (columns - 1) / 2f) + transform.position;
+
+        int index = 0;
+        for (int t = 0; t < rows; t++)
         {
-            for (int z = 0; z < xAmount; z++)
+            for(int column = 0; column < columns; column++)
             {
-                GameObject newSoldier = Instantiate(soldier, transform);
-                newSoldier.transform.position = soldierPos;
-                soldierPos.x += spacing;
+                GameObject soldier = Instantiate(this.soldier, soldierHolder);
+                soldier.transform.position = (line * t) + (lineNormal * column) + offset;
+                soldier.GetComponent<SoldierBehaviour>().index = index;
+                index++;
             }
-            soldierPos.x = offset.x;
-            soldierPos.z += spacing;
         }
     }
-    public void RefreshLine()
+    public Vector3 GetPosition(int index)
     {
-        DeleteLine();
-        CreateLine();
-    }
+        Vector3 line = GetLine();
+        Vector3 lineNormal = GetLineNormal();
+        Vector3 offset = (-line * (rows - 1) / 2f) + (-lineNormal * (columns - 1) / 2f) + transform.position;
 
-    public Vector3 GetPos(int index)
-    {
-        int indexZ = index % zAmount;
-        int indexX = (index / zAmount);
-        float xRotation = Mathf.Cos(transform.rotation.ToEuler().y);
-        float zRotation = Mathf.Sin(transform.rotation.ToEuler().y);
-        return TopLeft() + new Vector3(spacing * indexX, 0, spacing * indexZ);
+        int columnIndex = index % columns;
+        int rowIndex = index / columns;
+        Vector3 position = (line * rowIndex) + (lineNormal * columnIndex) + offset;
+        return position;
     }
-
-    private void OnDrawGizmos()
+    public void DeleteLine()
     {
-        for (int i = 0; i < transform.childCount; i++)
+        for (int i = soldierHolder.childCount - 1; i >= 0; i--)
         {
-            //Gizmos.DrawSphere(GetPos(i), 1);
+            DestroyImmediate(soldierHolder.GetChild(i).gameObject);
         }
-        Vector3 topLeft = TopLeft();
-        Gizmos.DrawSphere(topLeft, 1);
-
-        Gizmos.DrawSphere(transform.position, 1);
-
-        float radius = spacing;
-        float degreeStep = 360f / (float)10;
-        for (float degree = 0; Math.Round(degree, 2) <= 360; degree += degreeStep)
-        {
-            double x = transform.position.x + radius * Math.Cos(degree * Math.PI / 180);
-            double y = transform.position.z + radius * Math.Sin(degree * Math.PI / 180);
-
-            //Gizmos.DrawSphere(new Vector3((float)x, 1.5f, (float)y), 0.2f);
-        }
-    }
-
-    public Vector3 TopLeft()
-    {
-        Vector3 position = (new Vector3(((xAmount -1) / 2f) * spacing, 0, (zAmount -1) / 2f) * spacing);
-
-        float radius = spacing;
-        float rotation = gameObject.transform.rotation.eulerAngles.y;
-        
-        double x = gameObject.transform.position.x + radius * Math.Cos(rotation / 180 * MathF.PI);
-        double z = gameObject.transform.position.z + radius * Math.Sin(rotation / 180 * MathF.PI);
-        return transform.position - position;
-        return new Vector3((float)x, 1.5f, (float)z);
     }
 
     // Start is called before the first frame update
@@ -102,14 +86,23 @@ public class LineControl : MonoBehaviour
     {
 
     }
+
+    private void OnDrawGizmos()
+    {
+        for(int i = 0; i < rows * columns; i++)
+        {
+            Gizmos.DrawSphere(GetPosition(i), 0.3f);
+        }
+    }
 }
 
-[CustomEditor(typeof(LineControl))]
+[CustomEditor(typeof(LineControl)), CanEditMultipleObjects]
 public class LineEditor : Editor
 {
     public override void OnInspectorGUI()
     {
         LineControl parent = (LineControl)target;
+
         if (GUILayout.Button("Create Line"))
         {
             parent.CreateLine();
@@ -118,9 +111,10 @@ public class LineEditor : Editor
         {
             parent.DeleteLine();
         }
-        if (GUILayout.Button("Refresh Line"))
+        if (GUILayout.Button("Refresh"))
         {
-            parent.RefreshLine();
+            parent.DeleteLine();
+            parent.CreateLine();
         }
 
         base.OnInspectorGUI();
