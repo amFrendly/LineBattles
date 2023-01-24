@@ -51,6 +51,7 @@ public class LineControl : MonoBehaviour
             {
                 GameObject soldier = Instantiate(this.soldier, soldierHolder);
                 soldier.transform.position = (line * t) + (lineNormal * column) + offset;
+                soldier.transform.rotation = transform.rotation;
                 soldier.GetComponent<SoldierBehaviour>().index = index;
                 index++;
             }
@@ -93,7 +94,7 @@ public class LineControl : MonoBehaviour
         {
             Gizmos.DrawSphere(GetPosition(i), 0.3f);
         }
-    }
+    } 
 }
 
 [CustomEditor(typeof(LineControl)), CanEditMultipleObjects]

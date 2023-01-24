@@ -142,6 +142,7 @@ GameObject:
   m_Component:
   - component: {fileID: 432436}
   - component: {fileID: 9517976}
+  - component: {fileID: -1519020754834308162}
   m_Layer: 0
   m_Name: ToonSoldier_WW2_demo_model
   m_TagString: Untagged
@@ -176,7 +177,7 @@ Animator:
   m_GameObject: {fileID: 111614}
   m_Enabled: 1
   m_Avatar: {fileID: 9000000, guid: f4209d51d1ad0434299f2d498ee076ba, type: 3}
-  m_Controller: {fileID: 0}
+  m_Controller: {fileID: 9100000, guid: e51d42958cb71ea4e9483b5eccb31744, type: 2}
   m_CullingMode: 1
   m_UpdateMode: 0
   m_ApplyRootMotion: 0
@@ -186,6 +187,22 @@ Animator:
   m_HasTransformHierarchy: 1
   m_AllowConstantClipSamplingOptimization: 1
   m_KeepAnimatorStateOnDisable: 0
+--- !u!114 &-1519020754834308162
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 111614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e6fab103d85acfe4bbc7ce57d997ed7a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  stopWithin: 0.1
+  index: 0
+  speed: 5
+  turnSpeed: 0.03
 --- !u!1 &120650
 GameObject:
   m_ObjectHideFlags: 0
